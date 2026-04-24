@@ -1,143 +1,197 @@
-🚀 AI-Powered Loan Risk Automation System
+# 🚀 AI-Powered Loan Risk Automation (n8n + GenAI + Webhooks)
 
-An end-to-end financial analytics automation project that uses workflow automation + Generative AI to:
+An end-to-end financial analytics automation project that combines **workflow automation** and **Generative AI** to:
 
-📊 Automatically generate loan risk summaries
-🤖 Explain loan decisions using AI
-🌐 Provide real-time responses via API (Webhook)
+- 📊 Automate loan portfolio risk reporting  
+- 🤖 Generate AI-based loan explanations  
+- 🌐 Provide real-time API responses using Webhooks  
 
-Built using n8n
-, LLMs, and API testing via Postman
-.
+Built using n8n, LLMs, and tested with Postman.
 
-📌 Problem Statement
+---
 
-In financial institutions:
+# 📌 Problem Statement
 
-Loan risk reporting is manual and repetitive
-Explaining why a loan is risky takes analyst effort
-No real-time system exists for decision explanations
+Loan risk analysis in financial institutions is:
 
-👉 This project solves these problems using automation + AI reasoning.
+- Manual and time-consuming  
+- Difficult to interpret for non-technical stakeholders  
+- Lacking real-time explainability  
 
-🧩 Solution Overview
+This project solves these challenges by automating insights and enabling AI-driven explanations.
 
-This system consists of two intelligent workflows:
+---
 
-🔹 1. Automated Loan Portfolio Risk Summary
-🎯 Objective
+# 🧩 Solution Overview
 
-Generate a weekly AI-based loan risk report and send it via email.
+The system includes two workflows:
 
-🔄 Workflow Steps
-⏰ Step 1: Schedule Trigger
-Runs automatically on a weekly basis
-📊 Step 2: Fetch Loan Data
-Reads data from Google Sheets
-Includes:
-Total loans
-Bad loan percentage
-High-risk grades (D, E, F)
-Interest rates
-Region-wise defaults
-⚙️ Step 3: Data Processing
-JavaScript node formats and aggregates the data
-🤖 Step 4: GenAI Analysis
-LLM converts raw metrics into business insights
+- 🔹 Automated Loan Risk Summary  
+- 🔹 AI Loan Decision Explanation API  
 
-Prompt Logic:
+---
 
-Summarize loan portfolio risk:
-- Highlight high-risk segments
-- Identify trends
-- Explain in simple business language
-📤 Step 5: Output
-Sends report via email (Gmail node)
-🧠 Sample Output
+# 🔄 Workflow 1: Automated Loan Portfolio Risk Summary
 
-“18.4% of loans fall under high-risk categories (D–F).
-Higher defaults are observed among borrowers with high DTI and low employment stability.
+## 🎯 Objective
+Generate a **weekly AI-driven loan risk report** and send it via email.
+
+---
+
+## ⚙️ Workflow Steps
+
+1. **Schedule Trigger**
+   - Runs weekly using Cron  
+
+2. **Data Fetch**
+   - Reads loan data from Google Sheets  
+   - Includes:
+     - Total loans  
+     - Bad loan %  
+     - High-risk grades (D, E, F)  
+     - Interest rates  
+     - Region-wise defaults  
+
+3. **Data Processing**
+   - JavaScript node cleans and structures data  
+
+4. **GenAI Analysis**
+   - Converts raw data into insights  
+
+   **Prompt Example:**
+   ```
+   Summarize loan portfolio risk:
+   - Highlight high-risk segments
+   - Identify trends
+   - Explain in simple business terms
+   ```
+
+5. **Output**
+   - Sends report via email  
+
+---
+
+## 🧠 Sample Output
+
+> “18.4% of loans fall under high-risk grades (D–F).  
+Higher defaults are linked to high DTI and low employment stability.  
 The South region shows elevated risk levels.”
 
-💼 Business Value
-Automates reporting
-Saves analyst time
-Enables proactive risk monitoring
-🔹 2. AI-Based Loan Decision Explanation API
-🎯 Objective
+---
 
-Provide real-time AI explanations for loan decisions using a Webhook.
+## 💼 Business Impact
 
-🌐 Key Feature
+- Reduces manual reporting  
+- Enables proactive risk monitoring  
+- Saves analyst time  
 
-👉 Acts like a mini backend AI service
-👉 Integrated with Postman for testing
+---
 
-🔄 Workflow Steps
-🧑‍💻 Step 1: Webhook Trigger
-Accepts POST request
+# 🔄 Workflow 2: AI-Based Loan Decision Explanation API
 
-Example Request:
+## 🎯 Objective
+Provide **real-time AI explanations** for loan decisions using Webhooks.
 
+---
+
+## 🌐 Key Feature
+
+- Acts as a **real-time AI backend service**
+- Integrated with Postman for API testing  
+
+---
+
+## ⚙️ Workflow Steps
+
+1. **Webhook Trigger**
+   - Accepts POST requests  
+
+   **Example Request:**
+   ```json
+   {
+     "loan_id": "L001",
+     "question": "Why is this loan risky?"
+   }
+   ```
+
+2. **Fetch Loan Details**
+   - Grade  
+   - Interest Rate  
+   - DTI  
+   - Income  
+   - Employment Length  
+   - Loan Purpose  
+
+3. **Data Processing**
+   - Formats input using JavaScript  
+
+4. **GenAI Reasoning**
+
+   **Prompt Example:**
+   ```
+   Explain why this loan is risky:
+   - Compare with a good loan
+   - Highlight key risk factors
+   - Keep explanation simple
+   ```
+
+5. **API Response**
+   - Returns explanation via Webhook  
+
+---
+
+## 🧠 Sample API Response
+
+```json
 {
-  "loan_id": "L001",
-  "question": "Why is this loan risky?"
+  "explanation": "This loan is high-risk due to high DTI and low income stability. Compared to good loans, this borrower has weaker repayment capacity."
 }
-📊 Step 2: Fetch Loan Details
-Retrieves:
-Grade
-Interest rate
-DTI
-Income category
-Employment length
-Loan purpose
-⚙️ Step 3: Data Formatting
-JavaScript node structures the input
-🤖 Step 4: GenAI Reasoning
+```
 
-Prompt Example:
+---
 
-Explain why this loan is risky:
-- Compare with a good loan profile
-- Highlight key risk factors
-- Keep explanation simple
-📤 Step 5: API Response
-Returns AI-generated explanation via Webhook
-🧠 Sample Response
-{
-  "explanation": "This loan is high-risk due to a high DTI (38%) and low income stability. Compared to good loans, this borrower has weaker repayment capacity."
-}
-💼 Business Value
-Real-time explainability
-Improves transparency
-Reduces dependency on analysts
-🔌 API Testing
+## 💼 Business Impact
 
-API endpoints were tested using Postman
-.
+- Enables real-time decision explanation  
+- Improves transparency  
+- Reduces dependency on analysts  
 
-Steps:
-Copy webhook URL from n8n
-Send POST request via Postman
-Receive AI-generated response instantly
+---
 
-⚙️ Tech Stack
-n8n
- – Workflow automation
-LLM (Groq / OpenAI) – AI reasoning
-Google Sheets – Data source
-Webhooks – API layer
-Postman
- – API testing
-🔥 Key Highlights
-Built end-to-end automation system
-Developed real-time AI API using Webhooks
-Combined:
-Data analytics
-Automation
-AI insights
+# 🔌 API Testing
 
-🚀 Future Enhancements
-Integration with dashboards (Power BI)
-Add ML-based risk scoring
-Deploy as production API
+Tested using Postman:
+
+1. Copy webhook URL from n8n  
+2. Send POST request  
+3. Receive AI-generated response  
+
+---
+
+# ⚙️ Tech Stack
+
+- n8n (Workflow Automation)  
+- LLM (Groq / OpenAI)  
+- Google Sheets  
+- Webhooks  
+- Postman  
+
+---
+
+# 🔥 Key Highlights
+
+- Built end-to-end automation system  
+- Implemented real-time AI API  
+- Combined data + automation + AI  
+
+---
+
+
+# 🚀 Future Improvements
+
+- Dashboard integration (Power BI)  
+- ML-based risk scoring  
+- Production API deployment  
+
+---
+
