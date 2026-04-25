@@ -1,0 +1,204 @@
+{
+  "name": "Loan_Risk_Summary_DBVersion",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1008,
+        -64
+      ],
+      "id": "1fa2b375-5386-4051-bf0a-eef64d9f2d04",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1YoBIuUnMP5FMMnOV8OP9sOe8qAw0SWAN8hbOWHpdK2w/edit?gid=1293628997#gid=1293628997",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1293628997,
+          "mode": "list",
+          "cachedResultName": "loan_cleaned",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YoBIuUnMP5FMMnOV8OP9sOe8qAw0SWAN8hbOWHpdK2w/edit#gid=1293628997"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -800,
+        -64
+      ],
+      "id": "5cd16415-73b1-4c5f-829a-311cb76fc877",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DCPklMKuT6UYKiQ1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all().map(item => item.json);\n\n// Total loans\nconst totalLoans = data.length;\n\n// Bad loans (Charged Off)\nconst badLoans = data.filter(d => d.loan_condition === \"BAD LOAN\").length;\nconst badLoanPct = totalLoans > 0 ? (badLoans / totalLoans) * 100 : 0;\n\n// High-risk grades\nconst highRiskLoans = data.filter(d => ['D','E','F'].includes(d.grade)).length;\n\n// Avg interest rate by grade\nconst interestByGrade = {};\nconst countByGrade = {};\n\ndata.forEach(d => {\n  const g = d.grade;\n\n  // Convert \"13.56%\" → 13.56\n  const rate = parseFloat((d.interest_rate || \"\").toString().replace('%','')) || 0;\n\n  if (!interestByGrade[g]) {\n    interestByGrade[g] = 0;\n    countByGrade[g] = 0;\n  }\n\n  interestByGrade[g] += rate;\n  countByGrade[g]++;\n});\n\n// Final average\nfor (let g in interestByGrade) {\n  interestByGrade[g] = (interestByGrade[g] / countByGrade[g]).toFixed(2);\n}\n\n// Region-wise defaults\nconst regionStats = {};\n\ndata.forEach(d => {\n  const r = d.region;\n\n  if (!regionStats[r]) {\n    regionStats[r] = { total: 0, bad: 0 };\n  }\n\n  regionStats[r].total++;\n\n  if (d.loan_condition === \"BAD LOAN\") {\n    regionStats[r].bad++;\n  }\n});\n\nconst regionDefaultPct = {};\n\nfor (let r in regionStats) {\n  regionDefaultPct[r] = regionStats[r].total > 0\n    ? ((regionStats[r].bad / regionStats[r].total) * 100).toFixed(2)\n    : \"0.00\";\n}\n\n// Final output\nreturn [{\n  json: {\n    totalLoans,\n    badLoanPct: badLoanPct.toFixed(2),\n    highRiskLoans,\n    interestByGrade,\n    regionDefaultPct\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        -64
+      ],
+      "id": "b9e0eee6-68e9-4b4a-a607-a0c65cb0eaae",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior credit risk analyst.\n\nAnalyze this loan portfolio:\n\n- Total Loans: {{$json.totalLoans}}\n- Bad Loan %: {{$json.badLoanPct}}%\n- High Risk Loans (D/E/F): {{$json.highRiskLoans}}\n- Avg Interest Rate by Grade: {{$json.interestByGrade}}\n- Region-wise Default %: {{$json.regionDefaultPct}}\n\nWrite a professional business email.\n\nSTRICT INSTRUCTIONS:\n- DO NOT include a subject line inside the email body\n- Start directly with: \"Dear Business Stakeholders,\"\n- Use clear section headings with line breaks (no markdown symbols like **)\n- Align values neatly using bullet points\n- Convert JSON fields into readable bullet format (Grade: Value, Region: Value)\n- Keep tone concise and professional\n\nSTRUCTURE:\n\nGreeting\n\nOverall Portfolio Health:\n- Bullet points with key metrics\n\nKey Risk Concerns:\n- 2–3 bullet points\n\nKey Patterns & Insights:\n- 2–3 bullet points\n\nRecommendations:\n- 2–3 actionable bullet points\n\nEnd with:\n\nRegards,  \nRisk Analytics Team",
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -368,
+        -64
+      ],
+      "id": "c8dc8280-af60-4922-864a-87ba5e36f1ac",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "sendTo": "babithatomy572@gmail.com",
+        "subject": "📊Weekly Loan Risk Summary",
+        "emailType": "text",
+        "message": "={{ $json.text }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        -64
+      ],
+      "id": "45cf29c6-91d9-4bcd-a821-48b4015d87a1",
+      "name": "Send a message",
+      "webhookId": "66f93dba-4e34-41bb-8397-2710ee9922a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "y9H2dEFeAgtYlOdo",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        112
+      ],
+      "id": "cdbb020d-9930-40f3-a3c0-2c262251e05c",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N9mWP93Vh0OHtEeW",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "bfc16ae8-33ab-4204-acb0-a06014b50635",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "11e4b6fad0ebc85a50f74f5b01de25e929aa57f670c63b14dd5c6a485abfa7f1"
+  },
+  "id": "cWbNaD17pXRKCmOi",
+  "tags": []
+}
